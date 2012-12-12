@@ -18,12 +18,12 @@ def dataconvert(data):
     #
     xLS = ord(xLS)-128 # change leading bit to zero
     xLS = xLS<<1 # shift bits left
-    x = ((    xLS  + (ord(xMS) * 255))<<1)
-    y = (((ord(yLS)<<1) + (ord(yMS) * 255))<<1)
-    z = (((ord(zLS)<<1) + (ord(zMS) * 255))<<1)
-    yaw = (((ord(yawLS)<<1) + (ord(yawMS) * 255))<<1)
-    pitch = (((ord(pitchLS)<<1) + (ord(pitchMS) * 255))<<1)
-    roll = (((ord(rollLS)<<1) + (ord(rollMS) * 255))<<1)
+    x = ((    xLS  + (ord(xMS) * 256))<<1)
+    y = (((ord(yLS)<<1) + (ord(yMS) * 256))<<1)
+    z = (((ord(zLS)<<1) + (ord(zMS) * 256))<<1)
+    yaw = (((ord(yawLS)<<1) + (ord(yawMS) * 256))<<1)
+    pitch = (((ord(pitchLS)<<1) + (ord(pitchMS) * 256))<<1)
+    roll = (((ord(rollLS)<<1) + (ord(rollMS) * 256))<<1)
     if x>32767: x-=65536
     if y>32767: y-=65536
     if z>32767: z-=65536
