@@ -90,7 +90,8 @@ t0 = time.time()
 tp = time.time()
 while time.time()-t0 < samptime:
     ti = time.time()
-    if ti-tp >= (1.0/samprate):
+    if ti-i0 >= (1.0/samprate):
+        ti0 = time.time()
         for i in range(4):
             tp = time.time()
             ser[i].write('B')
