@@ -43,27 +43,42 @@ import serial
 import time
 import struct
 
-# open the serial port
-# (I am using a Belkin F5U109 Serial RS-232 to USB adapter)
-ser = serial.Serial()
-ser.port = "/dev/ttyUSB0"
-ser.baudrate = 115200
-ser.open()
+# open the serial ports
+print "OPENING SERIAL PORTS"
+ser = [serial.Serial() for s in range(4)]
+for i in range(4):
+    print "PORT %d" % (i)
+    ser[i].port = "/dev/ttyUSB%d" % (i)
+    ser[i].baudrate = 115200
+    ser[i].open()
+    time.sleep(0.5)
+    ser[i].setRTS(True)
+    time.sleep(0.5)
+    ser[i].setRTS(False) # hello bird
+    time.sleep(0.5)
+    n = ser[i].inWaiting()
+    if n>0: dum = ser[i].read(n)
+    time.sleep(0.5)
 
-# toggle RTS (hello bird)
-ser.setRTS(True)
-ser.setRTS(False)
-
-# read any junk that might be waiting for us
-n = ser.inWaiting()
-if n>0:
-    dum = ser.read(n)
+# auto-configure flock
+print "AUTO-CONFIGURE FLOCK"
+time.sleep(1)
+ser[0].write('P')
+ser[0].write(chr(50))
+ser[0].write(chr(4))
+time.sleep(1)
 
 # tell bird we want it to send us 12-byte position/angle data
-ser.write('Y') # send POSITION / ANGLES command
-time.sleep(3)
+print "WANT POSITION/ANGLE DATA"
+for i in range(4):
+    print "PORT %d" % (i)
+    time.sleep(1)
+    ser[i].write('Y') # send POSITION / ANGLES command
+
+time.sleep(1)
 
 # open a data file
+print "OPENING DATA FILE"
 fid = open("datafile.txt","w")
 
 # sampling rate and recording length
@@ -76,19 +91,22 @@ tp = time.time()
 while time.time()-t0 < samptime:
     ti = time.time()
     if ti-tp >= (1.0/samprate):
-        tp = time.time()
-        ser.write('B')
-        while ser.inWaiting() < 12:
-            continue
-        data = ser.read(12)
-        x,y,z,roll,pitch,yaw = dataconvert(data)
-        print "%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f" % (tp-t0,x,y,z,roll,pitch,yaw)
-        fid.write("%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f\n" % (tp-t0,x,y,z,roll,pitch,yaw))
+        for i in range(4):
+            tp = time.time()
+            ser[i].write('B')
+            while ser[i].inWaiting() < 12:
+                continue
+            data = ser[i].read(12)
+            x,y,z,roll,pitch,yaw = dataconvert(data)
+            print "%d %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f" % (i,tp-t0,x,y,z,roll,pitch,yaw)
+            fid.write("%d %8.4f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f\n" % (i,tp-t0,x,y,z,roll,pitch,yaw))
 fid.close()
+print "DATA FILE CLOSED"
 
 # goodbye bird
-ser.setRTS(True)
-
-# close the serial port
-ser.close()
+print "GOODBYE BIRDS"
+for i in range(4):
+    ser[i].setRTS(True)
+    time.sleep(0.5)
+    ser[i].close()
 
