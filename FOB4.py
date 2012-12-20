@@ -65,7 +65,7 @@ print "AUTO-CONFIGURE FLOCK"
 time.sleep(1)
 ser[0].write('P')
 ser[0].write(chr(50))
-ser[0].write(chr(4))
+ser[0].write(chr(1)) # number of birds
 time.sleep(1)
 
 # tell bird we want it to send us 12-byte position/angle data
@@ -82,7 +82,7 @@ print "OPENING DATA FILE"
 fid = open("datafile.txt","w")
 
 # sampling rate and recording length
-samprate = 140.0 # Hz
+samprate = 100.0 # Hz
 samptime = 10.0 # seconds
 
 # loop to record data
@@ -93,14 +93,14 @@ while time.time()-t0 < samptime:
     ti = time.time()
     if ti-ts >= (1.0/samprate):
         ts = time.time()
-        for i in range(4):
+        for i in range(1): # number of birds
             tp = time.time()
             ser[i].write('B')
             while ser[i].inWaiting() < 12:
                 continue
             data = ser[i].read(12)
             x,y,z,roll,pitch,yaw = dataconvert(data)
-#           print "%d %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f" % (i,tp-t0,x,y,z,roll,pitch,yaw)
+            #if i==0: print "%d %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f" % (i,tp-t0,x,y,z,roll,pitch,yaw)
             fid.write("%d %8.4f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f\n" % (i,tp-t0,x,y,z,roll,pitch,yaw))
 fid.close()
 print "DATA FILE CLOSED"
